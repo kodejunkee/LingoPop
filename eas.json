@@ -12,16 +12,25 @@
       },
       "ios": {
         "simulator": true
+      },
+      "env": {
+        "CMAKE_BUILD_PARALLEL_LEVEL": "2"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "CMAKE_BUILD_PARALLEL_LEVEL": "2"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "CMAKE_BUILD_PARALLEL_LEVEL": "2"
+      }
     }
   },
   "submit": {
