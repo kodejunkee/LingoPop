@@ -35,7 +35,7 @@ This guide distills the system design practices that actually matter for an **of
 ## 3. Mobile Performance & Rendering
 
 * **Virtualized Lists for Large Datasets:** HSK 1–9 and CC-CEDICT contain 10,000+ vocabulary entries and thousands of characters. Always use virtualized lists (`FlatList` or `@shopify/flash-list`) with stable `keyExtractor` and memoized row components—never `.map()` inside a `ScrollView`.
-* **60/120fps Gesture & Canvas Isolation:** Hanzi stroke tracing (`@shopify/react-native-skia` + `react-native-gesture-handler` + `react-native-reanimated`) must update brush paths on the UI/worklet thread without triggering React re-renders on every finger move event.
+* **60/120fps Gesture & Canvas Isolation:** Hanzi stroke tracing (`react-native-svg` + `react-native-gesture-handler` + `react-native-reanimated`) must update brush paths on the UI/worklet thread without triggering React re-renders on every finger move event.
 * **Audio Preloading & Lifecycle Cleanup:** Preload the next exercise's audio clip while the learner is reading the current prompt, and always release or pause `expo-audio` players when leaving a screen to prevent overlapping sounds.
 * **Font & Vector Memoization:** Load Chinese display/calligraphy fonts once at startup (`expo-font`) and memoize parsed SVG/Skia stroke path strings.
 
