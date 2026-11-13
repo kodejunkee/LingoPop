@@ -94,3 +94,8 @@ export async function getAllLessonProgress(): Promise<Record<string, LessonProgr
   }
   return map;
 }
+
+export async function clearAllLessonProgress(): Promise<void> {
+  const db = await getDatabase();
+  await db.runAsync('DELETE FROM lesson_progress');
+}

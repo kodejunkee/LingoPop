@@ -47,7 +47,7 @@ export function createInitialLessonState(lesson: LessonDefinition): LessonSessio
 }
 
 export function evaluateStepAnswer(step: LessonStep, answer: string | null): boolean {
-  if (step.type === 'concept') {
+  if (step.type === 'concept' || step.type === 'word_intro') {
     return true;
   }
   if (!answer) {
@@ -72,6 +72,7 @@ export function evaluateStepAnswer(step: LessonStep, answer: string | null): boo
     case 'stroke_order_rule':
     case 'cloze_blank':
     case 'dialogue_read':
+    case 'graded_reader':
       return answer === step.targetOptionId;
     case 'sentence_scramble':
       return answer === step.expectedTileIds.join('|');
@@ -101,7 +102,7 @@ export function lessonReducer(
       }
 
       const { step } = action;
-      if (step.type === 'concept') {
+      if (!isGradedStep(step)) {
         return state;
       }
 
@@ -146,8 +147,8 @@ export function lessonReducer(
       const currentStepIndex = state.queue[state.queuePosition];
       const currentStep = action.lesson.steps[currentStepIndex];
 
-      // Concept steps advance directly from 'prompt'; graded steps advance after 'checked'
-      if (currentStep.type !== 'concept' && state.phase !== 'checked') {
+      // Ungraded informational steps advance directly from 'prompt'; graded steps advance after 'checked'
+      if (isGradedStep(currentStep) && state.phase !== 'checked') {
         return state;
       }
 

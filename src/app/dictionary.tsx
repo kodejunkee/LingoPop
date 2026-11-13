@@ -1,11 +1,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { speakMandarin, stopMandarinSpeech } from '@/engines/audioService';
 import { triggerSuccessHaptic, triggerTapHaptic } from '@/engines/haptics';
+import { formatHskBandLabel } from '@/storage/corpusQueries';
 import {
   enqueueVocabForSRS,
   searchDictionary,
@@ -13,22 +14,45 @@ import {
 } from '@/storage/srs';
 import { Colors, Radii, Spacing, ToneColors, type ToneNumber } from '@/theme/tokens';
 
+const PAGE_SIZE = 80;
+
 const HSK_FILTERS: { label: string; value: number | null }[] = [
   { label: 'All', value: null },
   { label: 'HSK 1', value: 1 },
   { label: 'HSK 2', value: 2 },
   { label: 'HSK 3', value: 3 },
+  { label: 'HSK 4', value: 4 },
+  { label: 'HSK 5', value: 5 },
+  { label: 'HSK 6', value: 6 },
+  { label: 'HSK 7–9', value: 7 },
 ];
 
 export default function DictionaryScreen() {
   const [query, setQuery] = useState('');
   const [hskFilter, setHskFilter] = useState<number | null>(null);
   const [rows, setRows] = useState<DictionaryRow[]>([]);
+  const [hasMore, setHasMore] = useState(false);
 
   const loadRows = useCallback(async (searchText: string, level: number | null) => {
-    const results = await searchDictionary(searchText, level);
+    const results = await searchDictionary(searchText, level, PAGE_SIZE, 0);
     setRows(results);
+    setHasMore(results.length === PAGE_SIZE);
   }, []);
+
+  const loadNextPage = useCallback(async () => {
+    if (!hasMore) return;
+    const more = await searchDictionary(query, hskFilter, PAGE_SIZE, rows.length);
+    if (more.length === 0) {
+      setHasMore(false);
+      return;
+    }
+    setRows((prev) => {
+      const seen = new Set(prev.map((r) => r.simplified));
+      const next = more.filter((r) => !seen.has(r.simplified));
+      return next.length > 0 ? [...prev, ...next] : prev;
+    });
+    setHasMore(more.length === PAGE_SIZE);
+  }, [hasMore, hskFilter, query, rows.length]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,7 +99,7 @@ export default function DictionaryScreen() {
                   {item.pinyin}
                 </Text>
                 <View style={styles.hskTag}>
-                  <Text style={styles.hskTagText}>HSK {item.hskLevel}</Text>
+                  <Text style={styles.hskTagText}>{formatHskBandLabel(item.hskLevel)}</Text>
                 </View>
                 {item.partOfSpeech ? (
                   <Text style={styles.posTag}>{item.partOfSpeech}</Text>
@@ -139,7 +163,7 @@ export default function DictionaryScreen() {
         <View style={styles.titleWrap}>
           <Text style={styles.pageTitle}>Offline Dictionary</Text>
           <Text style={styles.pageSubtitle}>
-            HSK 1–3 · Search Hanzi, Pinyin, or English
+            HSK 1–9 Offline Corpus · Hanzi, Pinyin & English
           </Text>
         </View>
       </View>
@@ -163,7 +187,11 @@ export default function DictionaryScreen() {
           ) : null}
         </View>
 
-        <View style={styles.filterRow}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+        >
           {HSK_FILTERS.map((f) => {
             const active = hskFilter === f.value;
             return (
@@ -181,13 +209,17 @@ export default function DictionaryScreen() {
               </Pressable>
             );
           })}
-        </View>
+        </ScrollView>
       </View>
 
       <FlatList
         data={rows}
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item) => item.simplified}
         renderItem={renderItem}
+        onEndReached={() => {
+          loadNextPage().catch((err) => console.warn('Dictionary pagination error:', err));
+        }}
+        onEndReachedThreshold={0.4}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={

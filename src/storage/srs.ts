@@ -208,10 +208,14 @@ export async function submitSRSReview(
  */
 export async function searchDictionary(
   rawQuery: string,
-  hskFilter: number | null = null
+  hskFilter: number | null = null,
+  limit = 80,
+  offset = 0
 ): Promise<DictionaryRow[]> {
   const db = await getDatabase();
   const query = rawQuery.trim();
+  const safeLimit = Math.max(1, Math.min(200, Math.floor(limit)));
+  const safeOffset = Math.max(0, Math.floor(offset));
 
   if (!query) {
     const sql = hskFilter
@@ -219,14 +223,16 @@ export async function searchDictionary(
          FROM vocabulary v
          LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
          WHERE v.hsk_level = ?
-         ORDER BY v.id ASC`
+         ORDER BY v.frequency_rank ASC, v.id ASC
+         LIMIT ? OFFSET ?`
       : `SELECT v.*, CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS is_enrolled
          FROM vocabulary v
          LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
-         ORDER BY v.id ASC`;
+         ORDER BY v.hsk_level ASC, v.frequency_rank ASC, v.id ASC
+         LIMIT ? OFFSET ?`;
     const rows = hskFilter
-      ? await db.getAllAsync<DictionaryQueryRow>(sql, [hskFilter])
-      : await db.getAllAsync<DictionaryQueryRow>(sql);
+      ? await db.getAllAsync<DictionaryQueryRow>(sql, [hskFilter, safeLimit, safeOffset])
+      : await db.getAllAsync<DictionaryQueryRow>(sql, [safeLimit, safeOffset]);
     return rows.map(mapDictRow);
   }
 
@@ -245,20 +251,31 @@ export async function searchDictionary(
         const ftsSql = hskFilter
           ? `SELECT v.*, CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS is_enrolled
              FROM vocabulary_fts f
-             INNER JOIN vocabulary v ON v.id = f.rowid
+             INNER JOIN vocabulary v ON v.rowid = f.rowid
              LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
              WHERE vocabulary_fts MATCH ? AND v.hsk_level = ?
-             LIMIT 100`
+             ORDER BY v.hsk_level ASC, v.frequency_rank ASC
+             LIMIT ? OFFSET ?`
           : `SELECT v.*, CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS is_enrolled
              FROM vocabulary_fts f
-             INNER JOIN vocabulary v ON v.id = f.rowid
+             INNER JOIN vocabulary v ON v.rowid = f.rowid
              LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
              WHERE vocabulary_fts MATCH ?
-             LIMIT 100`;
+             ORDER BY v.hsk_level ASC, v.frequency_rank ASC
+             LIMIT ? OFFSET ?`;
         const rows = hskFilter
-          ? await db.getAllAsync<DictionaryQueryRow>(ftsSql, [sanitizedTokens, hskFilter])
-          : await db.getAllAsync<DictionaryQueryRow>(ftsSql, [sanitizedTokens]);
-        if (rows.length > 0) {
+          ? await db.getAllAsync<DictionaryQueryRow>(ftsSql, [
+              sanitizedTokens,
+              hskFilter,
+              safeLimit,
+              safeOffset,
+            ])
+          : await db.getAllAsync<DictionaryQueryRow>(ftsSql, [
+              sanitizedTokens,
+              safeLimit,
+              safeOffset,
+            ]);
+        if (rows.length > 0 || safeOffset > 0) {
           return rows.map(mapDictRow);
         }
       } catch {
@@ -274,14 +291,14 @@ export async function searchDictionary(
        LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
        WHERE v.hsk_level = ?
          AND (v.simplified LIKE ? OR v.pinyin LIKE ? OR v.pinyin_numbered LIKE ? OR v.english LIKE ?)
-       ORDER BY v.id ASC
-       LIMIT 100`
+       ORDER BY v.frequency_rank ASC, v.id ASC
+       LIMIT ? OFFSET ?`
     : `SELECT v.*, CASE WHEN s.id IS NOT NULL THEN 1 ELSE 0 END AS is_enrolled
        FROM vocabulary v
        LEFT JOIN srs_cards s ON s.item_type = 'vocab' AND s.item_id = v.simplified
        WHERE v.simplified LIKE ? OR v.pinyin LIKE ? OR v.pinyin_numbered LIKE ? OR v.english LIKE ?
-       ORDER BY v.id ASC
-       LIMIT 100`;
+       ORDER BY CASE WHEN v.simplified = ? THEN 0 ELSE 1 END, v.hsk_level ASC, v.frequency_rank ASC
+       LIMIT ? OFFSET ?`;
 
   const rows = hskFilter
     ? await db.getAllAsync<DictionaryQueryRow>(likeSql, [
@@ -290,12 +307,17 @@ export async function searchDictionary(
         pattern,
         pattern,
         pattern,
+        safeLimit,
+        safeOffset,
       ])
     : await db.getAllAsync<DictionaryQueryRow>(likeSql, [
         pattern,
         pattern,
         pattern,
         pattern,
+        query,
+        safeLimit,
+        safeOffset,
       ]);
 
   return rows.map(mapDictRow);

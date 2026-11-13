@@ -4,9 +4,11 @@ import { Platform } from 'react-native';
 import { DOJO_CHARACTERS } from '../curriculum/hanziData';
 import { HSK1_VOCAB } from '../curriculum/hsk1Vocab';
 import { HSK2_3_VOCAB } from '../curriculum/hsk2Vocab';
+import { STAGE_5_6_VOCAB } from '../curriculum/hskAdvancedVocab';
+import { ensureCorpusSchemaColumns, importChineseCorpusIfAvailable } from './corpusLoader';
 
 const DB_NAME = 'lingopop.db';
-const SCHEMA_VERSION = 3;
+const SCHEMA_VERSION = 5;
 
 let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
@@ -119,6 +121,26 @@ async function runMigrations(
   if (fromVersion < 3) {
     await seedHanziCharacters(db);
     await seedVocabulary(db);
+  }
+
+  let corpusSynced = true;
+  if (fromVersion < 4) {
+    await ensureCorpusSchemaColumns(db);
+    await seedVocabulary(db);
+
+    if (Platform.OS !== 'web') {
+      try {
+        corpusSynced = await importChineseCorpusIfAvailable(db);
+      } catch (err) {
+        corpusSynced = false;
+        console.warn('Corpus asset import failed (will retry next launch):', err);
+      }
+    }
+  }
+
+  if (fromVersion < 5) {
+    await seedHanziCharacters(db);
+    await seedVocabulary(db);
 
     if (Platform.OS !== 'web') {
       try {
@@ -129,7 +151,8 @@ async function runMigrations(
     }
   }
 
-  await db.execAsync(`PRAGMA user_version = ${SCHEMA_VERSION};`);
+  const targetVersion = corpusSynced ? SCHEMA_VERSION : Math.min(3, fromVersion || 3);
+  await db.execAsync(`PRAGMA user_version = ${targetVersion};`);
 }
 
 async function seedHanziCharacters(db: SQLite.SQLiteDatabase): Promise<void> {
@@ -154,7 +177,7 @@ async function seedHanziCharacters(db: SQLite.SQLiteDatabase): Promise<void> {
 }
 
 async function seedVocabulary(db: SQLite.SQLiteDatabase): Promise<void> {
-  const allEntries = [...HSK1_VOCAB, ...HSK2_3_VOCAB];
+  const allEntries = [...HSK1_VOCAB, ...HSK2_3_VOCAB, ...STAGE_5_6_VOCAB];
   await db.withTransactionAsync(async () => {
     for (const entry of allEntries) {
       await db.runAsync(

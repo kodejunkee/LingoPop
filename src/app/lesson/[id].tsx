@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LessonExerciseView } from '@/components/LessonExerciseView';
 import { getLessonById } from '@/curriculum';
-import type { LessonStep } from '@/curriculum/types';
+import { isGradedStep, type LessonStep } from '@/curriculum/types';
 import { speakMandarin, stopMandarinSpeech } from '@/engines/audioService';
 import {
   triggerErrorHaptic,
@@ -30,6 +30,8 @@ import { Colors, Radii, Spacing } from '@/theme/tokens';
 
 function getStepTargetAudioText(step: LessonStep): string | null {
   switch (step.type) {
+    case 'word_intro':
+      return step.hanzi;
     case 'tone_contour':
       return step.targetHanzi;
     case 'minimal_pair':
@@ -44,7 +46,7 @@ function getStepTargetAudioText(step: LessonStep): string | null {
 }
 
 function isSelectionReady(step: LessonStep, selected: string | null): boolean {
-  if (step.type === 'concept') return true;
+  if (!isGradedStep(step)) return true;
   if (!selected) return false;
   if (step.type === 'pinyin_builder') {
     const parts = selected.split('|');
@@ -205,7 +207,7 @@ function LessonSessionRunner({
   const handlePrimaryPress = () => {
     if (!currentStep) return;
 
-    if (currentStep.type === 'concept' || state.phase === 'checked') {
+    if (!isGradedStep(currentStep) || state.phase === 'checked') {
       triggerTapHaptic();
       stopMandarinSpeech();
       dispatch({ type: 'ADVANCE', lesson });
@@ -287,7 +289,7 @@ function LessonSessionRunner({
             (state.isCurrentCorrect ? styles.footerCorrect : styles.footerWrong),
         ]}
       >
-        {state.phase === 'checked' && currentStep && currentStep.type !== 'concept' ? (
+        {state.phase === 'checked' && currentStep && isGradedStep(currentStep) ? (
           <View style={styles.feedbackBox}>
             <View style={styles.feedbackHeader}>
               <Ionicons
@@ -306,18 +308,20 @@ function LessonSessionRunner({
                   : 'Not quite — we’ll revisit this soon'}
               </Text>
             </View>
-            <Text style={styles.feedbackExplanation}>{currentStep.explanation}</Text>
+            <Text style={styles.feedbackExplanation}>
+              {'explanation' in currentStep ? currentStep.explanation : ''}
+            </Text>
           </View>
         ) : null}
 
         <Pressable
-          disabled={currentStep?.type !== 'concept' && state.phase === 'prompt' && !canCheck}
+          disabled={
+            Boolean(currentStep && isGradedStep(currentStep) && state.phase === 'prompt' && !canCheck)
+          }
           onPress={handlePrimaryPress}
           style={[
             styles.primaryButton,
-            currentStep?.type !== 'concept' &&
-              state.phase === 'prompt' &&
-              !canCheck &&
+            Boolean(currentStep && isGradedStep(currentStep) && state.phase === 'prompt' && !canCheck) &&
               styles.primaryButtonDisabled,
             state.phase === 'checked' &&
               !state.isCurrentCorrect &&
@@ -325,7 +329,7 @@ function LessonSessionRunner({
           ]}
         >
           <Text style={styles.primaryButtonText}>
-            {currentStep?.type === 'concept'
+            {currentStep && !isGradedStep(currentStep)
               ? 'Got It, Continue'
               : state.phase === 'checked'
                 ? 'Continue'

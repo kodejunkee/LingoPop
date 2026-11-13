@@ -10,6 +10,8 @@ export interface HanziStrokeDef {
   name: string;
   /** Polyline points in normalized 0..100 coordinate space */
   points: Point[];
+  /** Optional Make Me a Hanzi calligraphic silhouette path in normalized 0..100 coordinates */
+  svgPath?: string;
   /** Direction hint shown when learner traces backwards */
   hint: string;
 }
@@ -23,6 +25,7 @@ export interface HanziCharacterDef {
   radicalMeaning: string;
   componentsSummary: string;
   etymologyStory: string;
+  hskLevel?: number;
   strokes: HanziStrokeDef[];
 }
 
@@ -910,6 +913,366 @@ export const HANZI_DATABASE: Record<string, HanziCharacterDef> = {
           { x: 78, y: 84 },
         ],
         hint: 'Firm downward-right press.',
+      },
+    ],
+  },
+  四: {
+    char: '四',
+    pinyin: 'sì',
+    tone: 4,
+    meaning: 'four (4)',
+    radical: '囗',
+    radicalMeaning: 'enclosure / box',
+    componentsSummary: 'Outer enclosure 囗 around two inner strokes, closed at the bottom',
+    etymologyStory: 'Think of an enclosed room dividing space into four corners—trace the frame, fill inside, then close the floor!',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '竖 (Shù · Left wall)',
+        points: [
+          { x: 12.9, y: 28.7 },
+          { x: 18.5, y: 36.2 },
+          { x: 23.8, y: 72.4 },
+        ],
+        hint: 'Left outer wall from top to bottom.',
+      },
+      {
+        name: '横折 (Héngzhé · Top & right wall)',
+        points: [
+          { x: 18.3, y: 29.8 },
+          { x: 78.2, y: 24 },
+          { x: 84.6, y: 30.5 },
+          { x: 73.7, y: 73.3 },
+        ],
+        hint: 'Across the roof then straight down the right side.',
+      },
+      {
+        name: '撇 (Piě · Inner left)',
+        points: [
+          { x: 36.8, y: 30.6 },
+          { x: 37.8, y: 42.8 },
+          { x: 29.1, y: 57 },
+        ],
+        hint: 'Inside left curve downward.',
+      },
+      {
+        name: '竖弯 (Shùwān · Inner right)',
+        points: [
+          { x: 51.8, y: 28.2 },
+          { x: 55.3, y: 44.3 },
+          { x: 59.4, y: 51.1 },
+          { x: 71.5, y: 50.9 },
+        ],
+        hint: 'Down inside right then curve short to the right.',
+      },
+      {
+        name: '横 (Héng · Close the bottom)',
+        points: [
+          { x: 25.7, y: 66.8 },
+          { x: 68.9, y: 67.3 },
+        ],
+        hint: 'Golden Rule: always close the enclosure last!',
+      },
+    ],
+  },
+  五: {
+    char: '五',
+    pinyin: 'wǔ',
+    tone: 3,
+    meaning: 'five (5)',
+    radical: '二',
+    radicalMeaning: 'two',
+    componentsSummary: 'Crossed middle pillars balanced between top and bottom bars',
+    etymologyStory: 'Ancient tally showing five crossing between heaven above and earth below.',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '横 (Héng · Top bar)',
+        points: [
+          { x: 29.7, y: 20.1 },
+          { x: 73.5, y: 16.3 },
+        ],
+        hint: 'Top bar left to right.',
+      },
+      {
+        name: '竖 (Shù · Tilted spine)',
+        points: [
+          { x: 44.9, y: 23.1 },
+          { x: 47.2, y: 30.6 },
+          { x: 35.4, y: 71.5 },
+        ],
+        hint: 'Pull slightly angled downward through the center.',
+      },
+      {
+        name: '横折 (Héngzhé · Middle corner)',
+        points: [
+          { x: 26.7, y: 45.4 },
+          { x: 63.9, y: 42.3 },
+          { x: 66.9, y: 45.5 },
+          { x: 57.8, y: 70.4 },
+        ],
+        hint: 'Across the waist, corner down to the base.',
+      },
+      {
+        name: '横 (Héng · Wide base)',
+        points: [
+          { x: 6.2, y: 76.4 },
+          { x: 40.9, y: 73.3 },
+          { x: 94.3, y: 77.1 },
+        ],
+        hint: 'Long steady base across the bottom.',
+      },
+    ],
+  },
+  六: {
+    char: '六',
+    pinyin: 'liù',
+    tone: 4,
+    meaning: 'six (6)',
+    radical: '八',
+    radicalMeaning: 'eight / divide',
+    componentsSummary: 'Top lid 亠 resting over two spreading legs 八',
+    etymologyStory: 'Picture a roof peak (top dot + crossbar) standing firmly on two legs.',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '点 (Diǎn · Top peak)',
+        points: [
+          { x: 43.1, y: 14.1 },
+          { x: 55.5, y: 24 },
+        ],
+        hint: 'Crisp centered top dot.',
+      },
+      {
+        name: '横 (Héng · Shoulder bar)',
+        points: [
+          { x: 12.2, y: 43.5 },
+          { x: 44.3, y: 40.6 },
+          { x: 89.6, y: 39.6 },
+        ],
+        hint: 'Wide shoulder line left to right.',
+      },
+      {
+        name: '撇 (Piě · Left leg)',
+        points: [
+          { x: 35.2, y: 54 },
+          { x: 28.5, y: 70.2 },
+          { x: 15.8, y: 78.4 },
+        ],
+        hint: 'Sweep downward-left for balance.',
+      },
+      {
+        name: '点 (Diǎn · Right leg)',
+        points: [
+          { x: 59.7, y: 55.4 },
+          { x: 77.1, y: 78.4 },
+        ],
+        hint: 'Press down-right to mirror the left leg.',
+      },
+    ],
+  },
+  七: {
+    char: '七',
+    pinyin: 'qī',
+    tone: 1,
+    meaning: 'seven (7)',
+    radical: '一',
+    radicalMeaning: 'one',
+    componentsSummary: 'Slanted crossbar cut by a vertical curve-hook 乚',
+    etymologyStory: 'A neat 2-stroke cut across a stick—keep the crossbar tilting slightly upward!',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '横 (Héng · Tilted crossbar)',
+        points: [
+          { x: 9.9, y: 54.7 },
+          { x: 48, y: 47.2 },
+          { x: 86.1, y: 42.9 },
+        ],
+        hint: 'Sweep slightly upward left to right.',
+      },
+      {
+        name: '竖弯钩 (Shùwāngōu · Curve hook)',
+        points: [
+          { x: 35.5, y: 14.6 },
+          { x: 39.7, y: 56 },
+          { x: 42.1, y: 75.1 },
+          { x: 53.1, y: 79 },
+          { x: 76.6, y: 77 },
+        ],
+        hint: 'Pull straight down, bend right, then finish cleanly.',
+      },
+    ],
+  },
+  八: {
+    char: '八',
+    pinyin: 'bā',
+    tone: 1,
+    meaning: 'eight (8)',
+    radical: '八',
+    radicalMeaning: 'divide / part',
+    componentsSummary: 'Two outward-facing sweeping strokes (piě on left, nà on right)',
+    etymologyStory: 'Two strokes splitting apart cleanly—left sweep first, higher right sweep second!',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '撇 (Piě · Left sweep)',
+        points: [
+          { x: 32.3, y: 42 },
+          { x: 19.9, y: 67.8 },
+          { x: 8.7, y: 75.9 },
+        ],
+        hint: 'Left half sweeps down and outward left.',
+      },
+      {
+        name: '捺 (Nà · Right sweep)',
+        points: [
+          { x: 44.1, y: 20 },
+          { x: 67.7, y: 58.4 },
+          { x: 95.5, y: 73.5 },
+        ],
+        hint: 'Start higher on the right and sweep down-right.',
+      },
+    ],
+  },
+  九: {
+    char: '九',
+    pinyin: 'jiǔ',
+    tone: 3,
+    meaning: 'nine (9)',
+    radical: '乙',
+    radicalMeaning: 'twist / hook',
+    componentsSummary: 'Left sweep 撇 crossed by a sweeping curve hook 乙',
+    etymologyStory: 'Start with the falling sweep first, then wrap smoothly down and hook upward.',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '撇 (Piě · Upright sweep)',
+        points: [
+          { x: 39.3, y: 9 },
+          { x: 36.5, y: 52.7 },
+          { x: 7.6, y: 83.1 },
+        ],
+        hint: 'Start high center and curve smoothly down-left.',
+      },
+      {
+        name: '横折弯钩 (Héngzhéwāngōu)',
+        points: [
+          { x: 14.9, y: 41.8 },
+          { x: 62.3, y: 33.2 },
+          { x: 56.3, y: 68.2 },
+          { x: 66.3, y: 82.5 },
+          { x: 89.6, y: 80.3 },
+          { x: 92.4, y: 61.8 },
+        ],
+        hint: 'Cross right, dip down, curve flat bottom, hook straight up!',
+      },
+    ],
+  },
+  个: {
+    char: '个',
+    pinyin: 'gè',
+    tone: 4,
+    meaning: 'general counting unit',
+    radical: '人',
+    radicalMeaning: 'person / roof + tally',
+    componentsSummary: '人 (person roof) standing over a single vertical tally 丨',
+    etymologyStory: 'Think of ONE upright bamboo tally under a roof—the universal counter for people and things!',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '撇 (Piě · Left roof)',
+        points: [
+          { x: 46.7, y: 9.8 },
+          { x: 31.3, y: 41.7 },
+          { x: 11.3, y: 57.3 },
+        ],
+        hint: 'Sweep left downward.',
+      },
+      {
+        name: '捺 (Nà · Right roof)',
+        points: [
+          { x: 51, y: 20.5 },
+          { x: 70.9, y: 42.3 },
+          { x: 95.3, y: 50 },
+        ],
+        hint: 'Press downward-right to match.',
+      },
+      {
+        name: '竖 (Shù · Center pillar)',
+        points: [
+          { x: 46.8, y: 39.6 },
+          { x: 48.8, y: 81.1 },
+          { x: 50.3, y: 89.2 },
+        ],
+        hint: 'Vertical line straight down the center.',
+      },
+    ],
+  },
+  妈: {
+    char: '妈',
+    pinyin: 'mā',
+    tone: 1,
+    meaning: 'mom / mother',
+    radical: '女',
+    radicalMeaning: 'woman (meaning hint)',
+    componentsSummary: '女 (woman — meaning) + 马 (mǎ — sound clue!)',
+    etymologyStory: 'Classic picto-phonetic compound: 女 tells you the meaning relates to female/family; 马 hints the pronunciation mā!',
+    hskLevel: 1,
+    strokes: [
+      {
+        name: '撇点 (Piědiǎn · Woman bend)',
+        points: [
+          { x: 26.1, y: 11.9 },
+          { x: 21.1, y: 61.3 },
+          { x: 41, y: 79.7 },
+        ],
+        hint: 'Down then kick right.',
+      },
+      {
+        name: '撇 (Piě · Woman cross)',
+        points: [
+          { x: 35.3, y: 37.7 },
+          { x: 29.7, y: 70.4 },
+          { x: 14.6, y: 81.8 },
+        ],
+        hint: 'Curved downward stroke.',
+      },
+      {
+        name: '提 (Tí · Woman lift)',
+        points: [
+          { x: 6, y: 47.9 },
+          { x: 34.7, y: 42.5 },
+        ],
+        hint: 'Short bar slanting upward right.',
+      },
+      {
+        name: '横折 (Héngzhé · 马 top)',
+        points: [
+          { x: 46.2, y: 18.2 },
+          { x: 74.7, y: 17.9 },
+          { x: 68.7, y: 46.8 },
+        ],
+        hint: 'Across and down for the horse head.',
+      },
+      {
+        name: '竖折折钩 (Shùzhézhégōu)',
+        points: [
+          { x: 50.9, y: 24.4 },
+          { x: 52.8, y: 51.8 },
+          { x: 84.1, y: 51.5 },
+          { x: 76.5, y: 82.2 },
+          { x: 64.1, y: 79.4 },
+        ],
+        hint: 'Down, right, curve down, hook left.',
+      },
+      {
+        name: '横 (Héng · 马 bar)',
+        points: [
+          { x: 41.1, y: 67.4 },
+          { x: 74, y: 63.4 },
+        ],
+        hint: 'Horizontal bar across 马.',
       },
     ],
   },

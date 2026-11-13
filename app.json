@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "LingoPop",
+    "name": "Mimiko",
     "slug": "lingopop",
     "scheme": "lingopop",
     "version": "1.0.0",
@@ -11,8 +11,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lingopop.app",
       "infoPlist": {
-        "NSSpeechRecognitionUsageDescription": "Allow LingoPop to analyze your Mandarin pronunciation.",
-        "NSMicrophoneUsageDescription": "Allow LingoPop to access your microphone for Mandarin pronunciation exercises."
+        "NSSpeechRecognitionUsageDescription": "Allow Mimiko to analyze your Mandarin pronunciation.",
+        "NSMicrophoneUsageDescription": "Allow Mimiko to access your microphone for Mandarin pronunciation exercises."
       }
     },
     "android": {
@@ -46,14 +46,14 @@
       [
         "expo-audio",
         {
-          "microphonePermission": "Allow LingoPop to access your microphone for speaking practice."
+          "microphonePermission": "Allow Mimiko to access your microphone for speaking practice."
         }
       ],
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Allow LingoPop to access your microphone for Mandarin pronunciation exercises.",
-          "speechRecognitionPermission": "Allow LingoPop to analyze your Mandarin pronunciation."
+          "microphonePermission": "Allow Mimiko to access your microphone for Mandarin pronunciation exercises.",
+          "speechRecognitionPermission": "Allow Mimiko to analyze your Mandarin pronunciation."
         }
       ],
       [

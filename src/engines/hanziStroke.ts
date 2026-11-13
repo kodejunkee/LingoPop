@@ -1,4 +1,4 @@
-import type { Point } from '../curriculum/hanziData';
+import type { HanziStrokeDef, Point } from '../curriculum/hanziData';
 
 export type StrokeValidationFailure =
   | 'too_short'
@@ -82,6 +82,127 @@ export function pointsToSvgPath(points: Point[], canvasSize: number): string {
       return `${cmd} ${(p.x * scale).toFixed(1)} ${(p.y * scale).toFixed(1)}`;
     })
     .join(' ');
+}
+
+function round1(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function clamp0100(value: number): number {
+  return Math.max(0, Math.min(100, round1(value)));
+}
+
+/**
+ * Converts a Make Me a Hanzi coordinate (0..1024 X, -124..900 bottom-up Y)
+ * into LingoPop's normalized 0..100 top-down SVG coordinate space.
+ */
+export function convertMmahPointToNormalized(x: number, y: number): Point {
+  return {
+    x: clamp0100((x / 1024) * 100),
+    y: clamp0100(((900 - y) / 1024) * 100),
+  };
+}
+
+/**
+ * Converts a Make Me a Hanzi median coordinate list into normalized 0..100 Points.
+ */
+export function convertMmahMedianToPoints(median: readonly (readonly [number, number])[]): Point[] {
+  return median.map(([x, y]) => convertMmahPointToNormalized(x, y));
+}
+
+const SVG_CMD_ARG_PAIRS: Record<string, number> = {
+  M: 1,
+  L: 1,
+  Q: 2,
+  C: 3,
+  Z: 0,
+};
+
+/**
+ * Converts a Make Me a Hanzi SVG silhouette path string (`M`, `L`, `Q`, `C`, `Z` in Cartesian
+ * 1024x900 space) into a top-down normalized 0..100 SVG path string.
+ */
+export function convertMmahSvgPathToNormalized(rawPath: string): string {
+  const parts = rawPath.trim().split(/\s+/);
+  const out: string[] = [];
+  let i = 0;
+
+  while (i < parts.length) {
+    const cmd = parts[i++];
+    const pairCount = SVG_CMD_ARG_PAIRS[cmd];
+    if (pairCount === undefined) {
+      break;
+    }
+    out.push(cmd);
+    for (let k = 0; k < pairCount && i + 1 < parts.length; k++) {
+      const pt = convertMmahPointToNormalized(Number(parts[i]), Number(parts[i + 1]));
+      out.push(String(pt.x), String(pt.y));
+      i += 2;
+    }
+  }
+
+  return out.join(' ');
+}
+
+/**
+ * Scales a normalized 0..100 SVG path (`M`, `L`, `Q`, `C`, `Z`) to match `canvasSize`.
+ */
+export function scaleNormalizedSvgPath(normPath: string, canvasSize: number): string {
+  if (!normPath) return '';
+  const scale = canvasSize / 100;
+  return normPath
+    .trim()
+    .split(/\s+/)
+    .map((tok) => {
+      if (tok in SVG_CMD_ARG_PAIRS) return tok;
+      const num = Number(tok);
+      return Number.isFinite(num) ? (num * scale).toFixed(1) : tok;
+    })
+    .join(' ');
+}
+
+function inferStrokeLabel(points: Point[], strokeIndex: number): { name: string; hint: string } {
+  if (points.length < 2) {
+    return { name: `Stroke ${strokeIndex + 1}`, hint: 'Follow the numbered guide dot.' };
+  }
+  const dx = points[points.length - 1].x - points[0].x;
+  const dy = points[points.length - 1].y - points[0].y;
+  const ax = Math.abs(dx);
+  const ay = Math.abs(dy);
+
+  if (ax > ay * 1.8 && dx > 0) {
+    return { name: '横 Héng (Horizontal)', hint: 'Sweep smoothly left to right.' };
+  }
+  if (ay > ax * 1.8 && dy > 0) {
+    return { name: '竖 Shù (Vertical)', hint: 'Pull straight downward from top to bottom.' };
+  }
+  if (dx < -4 && dy > 6) {
+    return { name: '撇 Piě (Left-fall)', hint: 'Sweep downward toward the bottom-left.' };
+  }
+  if (dx > 4 && dy > 6) {
+    return { name: '捺 / 点 (Right-fall / Dot)', hint: 'Move down toward the right.' };
+  }
+  return { name: `Stroke ${strokeIndex + 1}`, hint: 'Follow the guide path in order.' };
+}
+
+/**
+ * Converts normalized Make Me a Hanzi median tuples `[x, y][][]` and SVG silhouettes into
+ * interactive `HanziStrokeDef[]` ready for `HanziCanvas` validation and display.
+ */
+export function buildHanziStrokesFromMmah(
+  normalizedMedians: readonly (readonly [number, number][])[],
+  normalizedSvgPaths: readonly string[] = []
+): HanziStrokeDef[] {
+  return normalizedMedians.map((strokeCoords, idx) => {
+    const points = strokeCoords.map(([x, y]) => ({ x, y }));
+    const meta = inferStrokeLabel(points, idx);
+    return {
+      name: meta.name,
+      points,
+      svgPath: normalizedSvgPaths[idx],
+      hint: meta.hint,
+    };
+  });
 }
 
 /**

@@ -6,7 +6,7 @@ import { ALL_LESSONS, ALL_VOCAB } from '../index';
 import { getHanziDef } from '../hanziData';
 import { numberedToMarkedPinyin } from '../../engines/pinyin';
 
-describe('Curriculum integrity (Stages 0–4)', () => {
+describe('Curriculum integrity (Stages 0–6)', () => {
   it('has unique lesson and step IDs with valid target answers, Hanzi, and HSK 1–3 vocab links', () => {
     const lessonIds = new Set<string>();
     const stepIds = new Set<string>();
@@ -48,7 +48,8 @@ describe('Curriculum integrity (Stages 0–4)', () => {
           step.type === 'radical_breakdown' ||
           step.type === 'stroke_order_rule' ||
           step.type === 'cloze_blank' ||
-          step.type === 'dialogue_read'
+          step.type === 'dialogue_read' ||
+          step.type === 'graded_reader'
         ) {
           assert.ok(
             step.options.some((o) => o.id === step.targetOptionId),
@@ -58,6 +59,20 @@ describe('Curriculum integrity (Stages 0–4)', () => {
 
         if (step.type === 'dialogue_read') {
           assert.ok(step.lines.length > 0, `${step.id}: dialogue has no lines`);
+        }
+
+        if (step.type === 'graded_reader') {
+          assert.ok(step.paragraphs.length > 0, `${step.id}: graded_reader has no paragraphs`);
+          for (const para of step.paragraphs) {
+            assert.ok(para.segments.some((s) => !s.isPunctuation), `${step.id}: paragraph has no word segments`);
+          }
+        }
+
+        if (step.type === 'word_intro') {
+          assert.ok(step.hanzi.length > 0, `${step.id}: empty hanzi`);
+          assert.ok(step.pinyin.length > 0, `${step.id}: empty pinyin`);
+          assert.ok(step.english.length > 0, `${step.id}: empty english`);
+          assert.ok(step.explanation.length > 0, `${step.id}: empty explanation`);
         }
 
         if (step.type === 'speaking_drill') {

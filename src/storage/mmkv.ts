@@ -18,6 +18,7 @@ export const StorageKeys = {
   ACTIVE_COURSE: 'user.active_course',
   SOUND_ENABLED: 'prefs.sound_enabled',
   HAPTICS_ENABLED: 'prefs.haptics_enabled',
+  AUDIO_SPEED: 'prefs.audio_speed',
   PINYIN_MODE: 'prefs.pinyin_mode', // 'always' | 'learning' | 'hidden'
   REMINDER_ENABLED: 'prefs.reminder_enabled',
   REMINDER_HOUR: 'prefs.reminder_hour',

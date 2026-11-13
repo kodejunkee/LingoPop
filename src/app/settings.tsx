@@ -107,7 +107,7 @@ export default function SettingsScreen() {
     const [lessons, srs] = await Promise.all([getAllLessonProgress(), getSRSStats()]);
     const payload = {
       exportedAt: new Date().toISOString(),
-      app: 'LingoPop',
+      app: 'Mimiko',
       totalXp: getStoredNumber(StorageKeys.TOTAL_XP, 0),
       streakDays: getStoredNumber(StorageKeys.STREAK_DAYS, 0),
       srsStats: srs,
@@ -232,7 +232,7 @@ export default function SettingsScreen() {
         <Text style={styles.sectionLabel}>Your Offline Data</Text>
         <View style={styles.card}>
           <Text style={styles.settingSub}>
-            LingoPop stores 100% of your progress locally on-device with zero trackers or accounts required.
+            Mimiko stores 100% of your progress locally on-device with zero trackers or accounts required.
           </Text>
           <Pressable onPress={handleExportProgress} style={styles.exportBtn}>
             <Ionicons name="copy-outline" size={18} color="#FFFFFF" />

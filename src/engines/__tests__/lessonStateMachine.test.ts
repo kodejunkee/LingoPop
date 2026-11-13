@@ -120,4 +120,48 @@ describe('lessonStateMachine', () => {
     assert.equal(getAccuracyPercent(state), 100);
     assert.equal(state.xpAwarded, 25);
   });
+
+  it('treats word_intro steps as ungraded informational cards like concept', () => {
+    const wiStep = {
+      id: 'wi-test',
+      type: 'word_intro' as const,
+      hanzi: '你好',
+      pinyin: 'nǐ hǎo',
+      tone: 3 as const,
+      english: 'hello',
+      explanation: 'Universal greeting',
+    };
+    assert.equal(evaluateStepAnswer(wiStep, null), true);
+
+    const dummyLesson: LessonDefinition = {
+      id: 'dummy-wi',
+      stage: 1,
+      order: 1,
+      title: 'Dummy WI',
+      subtitle: 'Test',
+      estimatedMinutes: 2,
+      xpReward: 20,
+      goalSummary: 'Test word_intro',
+      steps: [
+        wiStep,
+        {
+          id: 'mc-after',
+          type: 'minimal_pair',
+          prompt: 'Test',
+          targetOptionId: 'opt1',
+          options: [{ id: 'opt1', hanzi: '好', pinyin: 'hǎo', tone: 3, meaning: 'good' }],
+          explanation: 'Done',
+        },
+      ],
+    };
+
+    let state = createInitialLessonState(dummyLesson);
+    assert.equal(state.queuePosition, 0);
+    assert.equal(state.phase, 'prompt');
+
+    // Clicking "Got It, Continue" dispatches ADVANCE directly
+    state = lessonReducer(state, { type: 'ADVANCE', lesson: dummyLesson });
+    assert.equal(state.queuePosition, 1);
+    assert.equal(state.phase, 'prompt');
+  });
 });

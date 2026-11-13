@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { getHanziDef } from '../curriculum/hanziData';
@@ -15,6 +15,7 @@ import type {
   StrokeTraceStep,
   ToneContourStep,
   ToneSandhiStep,
+  WordIntroStep,
 } from '../curriculum/types';
 import { speakMandarin } from '../engines/audioService';
 import { triggerTapHaptic } from '../engines/haptics';
@@ -23,6 +24,7 @@ import { Colors, Radii, Spacing, ToneColors, ToneLabels, type ToneNumber } from 
 import { AudioControlRow } from './AudioControlRow';
 import { ChoiceOptionList } from './ChoiceOptionList';
 import { DialogueReadView } from './DialogueReadView';
+import { GradedReaderView } from './GradedReaderView';
 import { HanziCanvas } from './HanziCanvas';
 import { SpeakingDrillView } from './SpeakingDrillView';
 import { ToneContourSvg } from './ToneContourSvg';
@@ -45,6 +47,8 @@ export function LessonExerciseView({
   switch (step.type) {
     case 'concept':
       return <ConceptView step={step} />;
+    case 'word_intro':
+      return <WordIntroView step={step} />;
     case 'tone_contour':
       return (
         <ToneContourView
@@ -134,6 +138,16 @@ export function LessonExerciseView({
           onSelectAnswer={onSelectAnswer}
         />
       );
+    case 'graded_reader':
+      return (
+        <GradedReaderView
+          key={step.id}
+          step={step}
+          selectedAnswer={selectedAnswer}
+          isChecked={isChecked}
+          onSelectAnswer={onSelectAnswer}
+        />
+      );
     case 'speaking_drill':
       return (
         <SpeakingDrillView
@@ -194,6 +208,65 @@ function ConceptView({ step }: { step: ConceptStep }) {
           );
         })}
       </View>
+    </View>
+  );
+}
+
+function WordIntroView({ step }: { step: WordIntroStep }) {
+  const toneColor = ToneColors[step.tone];
+
+  useEffect(() => {
+    // Softly play audio once upon arrival so learner hears the word immediately
+    speakMandarin(step.hanzi);
+  }, [step.id, step.hanzi]);
+
+  return (
+    <View style={styles.section}>
+      <View style={[styles.badgePill, { backgroundColor: '#F0FDF4' }]}>
+        <Ionicons name="sparkles" size={14} color="#16A34A" />
+        <Text style={[styles.badgeText, { color: '#16A34A' }]}>
+          {step.badgeLabel ?? 'Meet the Expression'}
+        </Text>
+      </View>
+
+      <View style={styles.introCard}>
+        <Text style={styles.introHanzi}>{step.hanzi}</Text>
+        <View style={styles.introPinyinRow}>
+          <Text style={[styles.introPinyin, { color: toneColor }]}>{step.pinyin}</Text>
+          <ToneContourSvg tone={step.tone} width={48} height={28} />
+        </View>
+        <Text style={styles.introEnglish}>&ldquo;{step.english}&rdquo;</Text>
+
+        <Pressable
+          onPress={() => {
+            triggerTapHaptic();
+            speakMandarin(step.hanzi);
+          }}
+          style={styles.introAudioBtn}
+        >
+          <Ionicons name="volume-high" size={20} color="#FFFFFF" />
+          <Text style={styles.introAudioText}>Listen Again</Text>
+        </Pressable>
+      </View>
+
+      {step.literalMeaning ? (
+        <View style={styles.literalBox}>
+          <Ionicons name="git-branch-outline" size={16} color={Colors.info} />
+          <Text style={styles.literalText}>
+            <Text style={{ fontWeight: '700' }}>Literal meaning: </Text>
+            {step.literalMeaning}
+          </Text>
+        </View>
+      ) : null}
+
+      <Text style={styles.introExplanation}>{step.explanation}</Text>
+
+      {step.culturalNote ? (
+        <View style={styles.tipBox}>
+          <Ionicons name="bulb-outline" size={18} color={Colors.primary} />
+          <Text style={styles.tipText}>{step.culturalNote}</Text>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -1197,5 +1270,73 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.85,
+  },
+  introCard: {
+    backgroundColor: Colors.surface,
+    padding: Spacing.xl,
+    borderRadius: Radii.xl,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginVertical: Spacing.xs,
+  },
+  introHanzi: {
+    fontSize: 44,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+    lineHeight: 52,
+  },
+  introPinyinRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  introPinyin: {
+    fontSize: 20,
+    fontWeight: '700',
+  },
+  introEnglish: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
+  introAudioBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: Radii.pill,
+    marginTop: Spacing.md,
+  },
+  introAudioText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  literalBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#EFF6FF',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: Radii.md,
+    borderWidth: 1,
+    borderColor: '#BFDBFE',
+  },
+  literalText: {
+    fontSize: 13,
+    color: '#1E40AF',
+    flex: 1,
+    lineHeight: 18,
+  },
+  introExplanation: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+    lineHeight: 21,
   },
 });

@@ -1,5 +1,5 @@
 {
-  "name": "lingopop",
+  "name": "mimiko",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
@@ -55,6 +55,15 @@
     "typecheck": "tsc --noEmit",
     "test": "tsx --test \"src/**/*.test.ts\"",
     "doctor": "expo-doctor"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "expo",
+        "expo-dev-client",
+        "expo-sqlite"
+      ]
+    }
   },
   "private": true
 }

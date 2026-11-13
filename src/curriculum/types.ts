@@ -17,6 +17,19 @@ export interface ConceptStep {
   examples: SoundExample[];
 }
 
+export interface WordIntroStep {
+  id: string;
+  type: 'word_intro';
+  badgeLabel?: string;
+  hanzi: string;
+  pinyin: string;
+  tone: ToneNumber;
+  english: string;
+  literalMeaning?: string;
+  explanation: string;
+  culturalNote?: string;
+}
+
 export interface ToneContourStep {
   id: string;
   type: 'tone_contour';
@@ -175,6 +188,30 @@ export interface DialogueReadStep {
   explanation: string;
 }
 
+export interface GradedReaderSegment {
+  text: string;
+  pinyin?: string;
+  isPunctuation?: boolean;
+}
+
+export interface GradedReaderParagraph {
+  segments: GradedReaderSegment[];
+  english: string;
+}
+
+export interface GradedReaderStep {
+  id: string;
+  type: 'graded_reader';
+  prompt: string;
+  hskBadge: string;
+  title: string;
+  paragraphs: GradedReaderParagraph[];
+  question: string;
+  targetOptionId: string;
+  options: RadicalOption[];
+  explanation: string;
+}
+
 export interface SpeakingDrillStep {
   id: string;
   type: 'speaking_drill';
@@ -188,6 +225,7 @@ export interface SpeakingDrillStep {
 
 export type LessonStep =
   | ConceptStep
+  | WordIntroStep
   | ToneContourStep
   | MinimalPairStep
   | ToneSandhiStep
@@ -198,22 +236,33 @@ export type LessonStep =
   | SentenceScrambleStep
   | ClozeBlankStep
   | DialogueReadStep
+  | GradedReaderStep
   | SpeakingDrillStep;
+
+export type AccessTier = 'free' | 'unlockable';
 
 export interface LessonDefinition {
   id: string;
+  courseId?: string;
+  hskLevel?: number;
   stage: number;
   order: number;
+  unitTitle?: string;
+  isCheckpointExam?: boolean;
   title: string;
   subtitle: string;
   estimatedMinutes: number;
   xpReward: number;
   goalSummary: string;
+  /** Future monetization seam: HSK 1 defaults to 'free', HSK 2+ defaults to 'unlockable'. */
+  accessTier?: AccessTier;
   /** Vocabulary items enrolled into FSRS spaced repetition upon completing this lesson */
   vocabRewards?: string[];
   steps: LessonStep[];
 }
 
-export function isGradedStep(step: LessonStep): boolean {
-  return step.type !== 'concept';
+export type GradedLessonStep = Exclude<LessonStep, ConceptStep | WordIntroStep>;
+
+export function isGradedStep(step: LessonStep): step is GradedLessonStep {
+  return step.type !== 'concept' && step.type !== 'word_intro';
 }
